@@ -1,0 +1,210 @@
+Creating a Static Library in UNIX
+
+In UNIX, there are two kinds of library files, shared and static. A static
+library is a library that is linked to the program statically, at link time.
+A shared library is a dynamically-linked library; it is linked either at 
+loadtime or at runtime, depending on the particular system. If linking is
+delayed until runtime, then the library is linked only when the program calls
+a function or references some other symbol that is defined in that library.
+
+Static linking, which was the original form of linking, resolves references to
+externally-defined symbols such as functions, by copying the library code into 
+the executable at "link time", i.e., when the executable is built. The primary
+advantage of static linking is that the executable is self-contained and can
+run on multiple platforms. For example, a program might use a graphical toolkit
+such as GTK that may not be present on all systems. By statically linking the
+toolkit's libraries into the executable, the executable can run on other
+systems (with the same machine architecture) without requiring the users on
+those systems to install those library files.
+
+Dynamic linking can be done either when the program is loaded into memory, or 
+while it is running and references an unresolved symbol. In the former case, the
+start-up time of the program is slightly longer than if it had been statically
+linked, since the libraries have to be located in memory (and possibly loaded
+into memory if they were not already there) and then linked to the program
+before it can actually begin execution. In the latter case, the program will
+experience slightly longer running time, because whenever an unresolved symbol
+is found and muct be resolved, there is a bit of overhead in locating the
+library and linking to it. 
+
+There are several advantages of linking dynamically over static linking.
+One is that, because the executable program file does not contain the code of the 
+libraries that must be linked to it, the executable file is smaller. This means that it 
+loads into memory faster and that it uses less space on disk. Another
+advantage is that it makes possible the sharing of memory resources. Instead
+of multiple copies of a library being physically incorporated into multiple
+programs, a single memory-resident copy of the library can be linked to each
+program, provided that it is a shared library. A dynamically-linked library is
+sharable if it is designed so that it is not modified when a process uses it. 
+All dynamically linked libraries in UNIX are sharable. This is why they have 
+the extension, ".so" -- short for shared object.
+
+Another advantage of linking via shared libraries is that this makes it 
+possible to update the libraries without recompiling the programs which use 
+them, provided the interfaces to the libraries do not change. If bugs are 
+discovered and fixed in these libraries, when they are dynamically linked to 
+the executables, all that is necessary is to obtain the modified libraries. If they
+were statically linked, then all programs that use them would hvae to be recompiled.
+
+Still other advantages are related to security issues. Hackers often try to attack
+applications through knowledge of specific addresses in the executable code. 
+Methods of deterring such types of attacks involve randomizing the locations of
+various relocatable segments in the code. With statically linked executables, 
+only the stack and heap address can be randomized: all instructions have  a 
+fixed address in all invocations. 
+With dynamically linked executables, the kernel has the ability to load the
+libraries at arbitrary addresses, independent of each other. This makes such
+attacks much harder.
+
+Identifying Libraries
+Static libraries end in ".a". Shared libraries have a ".so" extension, possibly
+with a version number following, such as librt.so.1. Both
+types of libraries start with the prefix "lib" and then have a unique name 
+that identifies that library. So for example, the standard C++ static library is
+libstdc++.a, and the shared real-time library is librt.so.1. 
+The "rt" is short for real-time.
+
+Reading the Contents of a Library
+There are several utilities that can be used to examine the contents of library files,
+with varying degrees of information provided and ease of use. They include:
+ar
+nm
+readelf
+objdump
+
+
+
+
+Creating a Static Library
+The steps to create a static library are fairly simple. Suppose that you have 
+one or more source code files containing useful functions or perhaps definitions
+of useful types. For the sake of precision, suppose that timestuff.c and errors.c
+are two such files. 
+Step 1: Create a header file that contains the prototypes of the functions defined
+in timestuff.c and errors.c. Suppose that file is called utils.h.
+
+Step 2. Compile the C source files into object files:
+    gcc -c timestuff.c  
+    gcc -c errors.c
+This will create the two files, timestuff.o and errors.o.
+
+Step 3. Run the archive command, ar, to create a new archive and insert the two 
+object files into it:
+    ar rcs libutils.a  timestuff.o errors.o
+The "r" tells ar to insert the object files into the archive. It is an operation code.
+The c and s are options; c means create the archive if it did not exist and s creates
+an index, like a table of contents, in the archive file. The name of the archive is
+given after the options. In this case, out library will be named libutils.a.
+
+Step 4. Install the library in some appropriate directory, and put the header file in
+an appropriate directory. I use the principle of "most-closely enclosing ancestral
+directory" for installing my custom libraries. For example, a library that will be used
+only for programs that I write for my UNIX System Programming class will be in a path
+something like:
+      ~/unix_demos/lib/libutils.a
+and its header will be 
+      ~/unix_demos/include/utils.h
+
+If I have a library that is generally useful to me for any programming task, I will put it
+in
+   ~/lib/libgoodstuff.a
+with its header in 
+   ~/include/goodstuff.h
+
+Step 5. Make sure that your LIBRARY_PATH environment variable contains paths to all of
+the directories in which you might put your library files. Your .bashrc file should have
+lines of the form:
+    LIBRARY_PATH="$LIBRARY_PATH:$HOME/lib:"
+    export LIBRARY_PATH
+so that gcc will know "where to look" for your custom static libraries.
+
+Step 6. To use the library in a program, you use the -l option to gcc to specify the name 
+of the library. Remember that the name is everything between "lib" and the ".". To link
+to my libutils.a library I would do two things. 
+(1) In the program I would write
+    #include "utils.h"
+and 
+(2) to build I would issue the command
+    gcc -o myprogram myprogram.c -lutils
+If you get the error message
+    /usr/bin/ld: cannot find -lutils
+    collect2: ld returned 1 exit status
+it means that you did not set up the LIBRARY_PATH properly. (Did you export it? Did you
+type it correctly?)
+
+Creating a Shared Library
+You can create a shared library with gcc. Note that the ar utility does not build 
+shared libraries. 
+You need to understand a few things about shared libraries in UNIX to make sense out of
+the options to be passed to gcc to create the library. 
+
+Every shared library has a special name called its "soname". The soname is constructed from the prefix ``lib'', 
+followed by the name of the library, then the string ".so", and finally,  a period and a version number 
+that is incremented whenever the interface changes. 
+
+Every shared library also has a "real name", which is the name of the actual file in which
+the library resides. The real name is longer than the soname; it must be formed by appending
+to the soname a period, and a minor number, and optionally, another period and a release number. 
+The minor number and release number are used for configuration control. 
+
+Lastly, the library has a name that is used by the compiler,  which is the soname without the version number.
+Example
+libutils.so.1      -- This will be the soname for the shared library I will create
+libutils.so.1.0.1  -- This will be the name of the file. I will use a minor number of 0 and a release number 1
+libutils.so        -- This is the name the compiler will use.
+
+If you look in the /lib directory, you will see that links are created in a specific way; 
+for each shared library there are often at least three entries, such as
+lrwxrwxrwx   1 root root      11 Aug 12 18:52 libacl.so -> libacl.so.1
+lrwxrwxrwx   1 root root      15 Aug 12 18:51 libacl.so.1 -> libacl.so.1.1.0
+-rwxr-xr-x   1 root root   31380 Aug  3 18:42 libacl.so.1.1.0
+
+Notice that the compiler's name (without the version number) is a soft
+link to the soname, which is a soft link to the actual library file. When we set up our libutils library,
+we need to do the same thing.
+
+Step 1. For each source code file that you intend to put into a shared library, 
+say stuff.c, compile it with position independent code using the following command:
+    gcc -fPIC -g -Wall -c stuff.c
+This will produce an object file, stuff.o, with debugging information included (the -g option),
+with all warnings enabled (always a safe thing to do). The "-fPIC" option is what generates
+the position independent code (hence PIC). Position independent code is code that can be executed
+regardless of where it is placed in memory. This is not the same thing as relocatable code. 
+Relocatable code is code that can be placed anywhere into memory with help from a linkage editor 
+or loader. Instructions such as those that specify addresses relative to the program counter are
+position independent.
+
+Step 2. Suppose that stuff.o and tools.o are two object files generated in accordance with Step 1.
+To create a shared library containing just those files with soname libgoodstuff.so.1, and real file
+name libgoodstuff.so.1.0.1, use the following command:
+    gcc -shared -Wl,-soname,libgoodstuff.so.1 -o libgoodstuff.so.1.0.1  stuff.o  tools.o
+
+This will create the file libgoodstuff.so.1.0.1 with the soname stored internally. Note that
+there cannot be any whitespace before or after the commas. The -Wl option tells gcc to pass 
+the remaining comma-separated list to the linker as options. You might read that you can use
+"-fpic" instead of "-fPIC" because it generates faster code. Do not. It is not guaranteed to 
+work in all cases. -fPIC generates bigger code but it never fails to work.
+
+Step 3. Now you need to call ldconfig to create a  symbolic link libutils.so.1 that points to
+the newly created file.  The option "-n ." tells ldconfig to restrict its linking and cleaning
+up to the current working directory: 
+    /sbin/ldconfig -n .  
+
+Step 4. The linker will look for a name of the form libgoodstuff.so, so we need to create
+another symbolic link with this name that links to libgoodstuff.so.1:
+  ln -sf libgoodstuff.so.1 libgoodstuff.so
+
+  
+Step 5. It is time to install the library in the appropriate place. Unless you have superuser privileges,
+you will not be able to install your nifty library in a standard location such as /usr/local/lib.
+Instead, you will most likely put it in your own lib directory, such as ~/lib.  Just copy all three
+files just created into the directory. 
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Create position independent code for object files
+gcc -fPIC -Wall -g -c die.c show_time.c
+
+# Create shared library.
+# Use -lc to link it against C library, since die and show_time
+# depend on the C library.
+
+gcc -g -shared -Wl,-soname,libutils.so.1 \
+    -o libutils.so.1.0.1 die.o show_time.o -lc
+
+# Now we need to call ldconfig to fix up the symbolic links.
+# /sbin/ldconfig -n .
+
+# Set up the linker name.
+# In a more sophisticated setting, we'd need to make
+# sure that if there was an existing linker name,
+# and if so, check if it should stay or not.
+
+# ln -sf libutils.so.1 libutils.so
+

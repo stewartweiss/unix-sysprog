@@ -1,6 +1,5 @@
 ## How to Use This Set of Programs
 
-March 21, 2013
 
 This directory contains demo programs that demonstrate the ideas in
 Chapter 5 of the UNIX System Programming lecture notes. This README explains
@@ -21,6 +20,4 @@ The programs should be studied in the following order:
 |`term_demo2.c`       | -- adds signal handling to `term_demo1.c`|
 |`procmaskdemo.c`      | -- shows how to mask signals with `procmask()`|
 
-
-To compile and build, you need to do the following:
-1. In the `utilities` directory
+Run `make` after following the instructions in the top-level `README.md` file.

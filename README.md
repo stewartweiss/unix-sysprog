@@ -1,3 +1,23 @@
+# UNIX System Programming "Demo" Programs
+
+## About This Repository
+I taught a course in UNIX System Programming at Hunter College for many years,
+using in part an excellent book by Bruce Molay, and in part, my own research,
+to develop the course.
+
+With each chapter, I created programs that were designed to demonstrate the
+concepts. The intention was that a student interested in this subject could
+tinker with the code to see how modifying parameters and inputs would affect
+program behavior. I call these "demo" programs for obvious reasons.
+
+The programs in this repository are organized by chapter. At present only
+Chapter 5 is included, simply because I am using it in an operating systems course
+to show how signals and asynchronous I/O work.
+
+I would welcome suggestions, corrections, discovery of bugs, and other improvements. At present there is no CONTRIBUTING file, because the projectis small and
+just getting underway.  If you see something that needs improvement,
+create an issue with as much detail as possible. 
+Please ensure your description is clear and has sufficient instructions to be able to reproduce the issue.
 
 ## How To Use This Repository
 

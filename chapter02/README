@@ -1,0 +1,13 @@
+This directory contains demo programs based upon the programs
+in Chapter 2 of my lecture notes.
+
+The Makefile will make all of the executables. For those unfamailiar with
+the make utility, just type
+    make
+on a line by itself. To remove all object files, type 
+    make clean
+To remove object files and executables, type
+    make cleanall
+
+
+

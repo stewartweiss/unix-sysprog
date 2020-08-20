@@ -6,11 +6,29 @@
   Purpose        : Provides the two utility functions needed in main()
   Build with     : gcc -c more_utils_v1.c
 
-  Notes          : 
+  Notes          :
   This version solves just a few problems:
   It displays the prompt in reverse video using an ANSI escape sequence.
   It correctly pages the given file.
- 
+
+******************************************************************************
+ * Copyright (C) 2019 - Stewart Weiss
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+
 ******************************************************************************/
 
 #include  "more_utils.h"
@@ -44,7 +62,7 @@ int  get_user_input(  )
 }
 
 /** do_more_of ( FILE * fp )
- *  Given a FILE* argument fp, display up to a page of the 
+ *  Given a FILE* argument fp, display up to a page of the
  *  file fp, and then display a prompt and wait for user input.
  *  If user inputs SPACEBAR, display next page.
  *  If user inputs RETURN, display one more line.
@@ -57,9 +75,9 @@ void do_more_of( FILE *fp )
     int    getmore      = 1;            // boolean to signal when to stop
     int    reply;                       // input from user
 
-    while ( getmore && fgets( line, LINELEN, fp ) ){ 
+    while ( getmore && fgets( line, LINELEN, fp ) ){
         // fgets() returns pointer to string read
-        if ( 0 == num_of_lines ) { 
+        if ( 0 == num_of_lines ) {
             // reached screen capacity so display prompt
             reply = get_user_input(  );
             switch ( reply ) {
